@@ -20,11 +20,26 @@ st.markdown("""
 }
 
 .center-screen {
-    height: 100vh;
+    width: 100%;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     flex-direction: column;
+    margin-top: 40px;
+}
+
+.header-box {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.form-box {
+    width: 100%;
+    max-width: 900px;
+    margin-top: 20px;
 }
 
 .title {
@@ -89,16 +104,28 @@ if not st.session_state.login:
 
     st.markdown("<div class='center-screen'>", unsafe_allow_html=True)
 
-    if os.path.exists("logo.png"):
-        st.image("logo.png", width=140)
-    else:
-        st.write("🏫")
+    # HEADER (LOGO + TITLE kiri kanan)
+    st.markdown("<div class='header-box'>", unsafe_allow_html=True)
 
-    st.markdown("""
-        <div class="title">
-            SMKN 1 Denpasar
-        </div>
-    """, unsafe_allow_html=True)
+    col1, col2 = st.columns([1,3])
+
+    with col1:
+        if os.path.exists("logo.png"):
+            st.image("logo.png", width=100)
+        else:
+            st.write("🏫")
+
+    with col2:
+        st.markdown("""
+            <div class="title" style="text-align:right;">
+                SMKN 1 Denpasar
+            </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # FORM BOX (FULL WIDTH RAPI)
+    st.markdown("<div class='form-box'>", unsafe_allow_html=True)
 
     tab1, tab2 = st.tabs(["Login", "Daftar"])
 
@@ -130,6 +157,8 @@ if not st.session_state.login:
             else:
                 save_user(email, password, role)
                 st.success("Akun berhasil dibuat!")
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
