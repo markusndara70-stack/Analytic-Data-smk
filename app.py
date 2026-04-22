@@ -1,12 +1,10 @@
+%%writefile app.py
 import streamlit as st
 import pandas as pd
 import os
-import json
-from datetime import datetime
-from hashlib import sha256
 
 # =========================
-# CONFIG PAGE
+# CONFIG
 # =========================
 st.set_page_config(
     page_title="SMKN 1 Denpasar",
@@ -14,260 +12,244 @@ st.set_page_config(
 )
 
 # =========================
-# CSS STYLING
+# STYLE
 # =========================
 st.markdown("""
 <style>
-    /* HEADER */
-    .header-box {
-        background: white;
-        padding: 2rem;
-        border-radius: 10px;
-        text-align: center;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        margin-bottom: 2rem;
-    }
 
-    .header-box h1 {
-        margin: 0.5rem 0;
-        color: #1f2937;
-    }
+.stApp {
+    background-color: #f8fafc;
+}
 
-    .header-box p {
-        margin: 0;
-        color: #6b7280;
-        font-size: 0.9rem;
-    }
+/* FULL CENTER LOGIN */
+.center-screen {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+}
 
-    /* FORM CONTAINER */
-    .form-container {
-        max-width: 500px;
-        margin: 0 auto;
-        background: white;
-        padding: 2rem;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
+/* TITLE */
+.title {
+    font-size: 26px;
+    font-weight: 700;
+    margin-top: 15px;
+}
 
-    /* TAB */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 1rem;
-    }
+/* container */
+.block-container {
+    padding-left: 40px;
+    padding-right: 40px;
+}
 
-    .stTabs [data-baseweb="tab"] {
-        padding: 0.75rem 1.5rem;
-        border-radius: 6px;
-    }
-
-    /* BUTTON */
-    .stButton > button {
-        width: 100%;
-        background-color: #2563eb;
-        color: white;
-        font-weight: 600;
-        border-radius: 6px;
-    }
-
-    .stButton > button:hover {
-        background-color: #1d4ed8;
-    }
-
-    /* FOOTER */
-    .footer-box {
-        background: #1f2937;
-        color: white;
-        padding: 2rem;
-        border-radius: 10px;
-        text-align: center;
-        margin-top: 2rem;
-    }
-
-    .footer-box p {
-        margin: 0.5rem 0;
-        color: #d1d5db;
-    }
-
-    /* DASHBOARD LAYOUT */
-    .dashboard-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem;
-        background: white;
-        border-radius: 10px;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .dashboard-header h1 {
-        margin: 0;
-        color: #1f2937;
-    }
-
-    .user-info {
-        color: #6b7280;
-        font-weight: 500;
-    }
 </style>
 """, unsafe_allow_html=True)
 
 # =========================
-# USER MANAGEMENT
+# USER SYSTEM
 # =========================
-USERS_FILE = "users.json"
+USER_FILE = "users.csv"
+
+if not os.path.exists(USER_FILE):
+    pd.DataFrame(columns=["email", "password", "role"]).to_csv(USER_FILE, index=False)
 
 def load_users():
-    """Load users dari file JSON"""
-    if os.path.exists(USERS_FILE):
-        with open(USERS_FILE, 'r') as f:
-            return json.load(f)
-    return {}
+    df = pd.read_csv(USER_FILE)
+    if "role" not in df.columns:
+        df["role"] = "siswa"
+    return df
 
-def save_users(users):
-    """Simpan users ke file JSON"""
-    with open(USERS_FILE, 'w') as f:
-        json.dump(users, f, indent=2)
-
-def hash_password(password):
-    """Hash password"""
-    return sha256(password.encode()).hexdigest()
-
-def verify_password(password, hashed):
-    """Verify password"""
-    return hash_password(password) == hashed
+def save_user(email, password, role):
+    users = load_users()
+    new = pd.DataFrame([[email, password, role]], columns=["email", "password", "role"])
+    users = pd.concat([users, new], ignore_index=True)
+    users.to_csv(USER_FILE, index=False)
 
 # =========================
-# SESSION STATE
+# SESSION
 # =========================
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-    st.session_state.user_email = None
-    st.session_state.user_name = None
+if "login" not in st.session_state:
+    st.session_state.login = False
+
+if "page" not in st.session_state:
+    st.session_state.page = "Dashboard"
 
 # =========================
-# LOGIN & REGISTER
+# LOGIN PAGE (CENTER FULL)
 # =========================
-if not st.session_state.logged_in:
-    # HEADER
+if not st.session_state.login:
+
+    st.markdown("<div class='center-screen'>", unsafe_allow_html=True)
+
+    # LOGO CENTER
+    if os.path.exists("logo.png"):
+        st.image("logo.png", width=140)
+    else:
+        st.write("🏫")
+
+    # TITLE
     st.markdown("""
-    <div class="header-box">
-        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🏫</div>
-        <h1>SMKN 1 Denpasar</h1>
-        <p>Sistem Informasi Sekolah</p>
-    </div>
+        <div class="title">
+            SMKN 1 Denpasar
+        </div>
     """, unsafe_allow_html=True)
-    
-    # FORM CONTAINER
-    st.markdown('<div class="form-container">', unsafe_allow_html=True)
-    
-    # TAB LOGIN & DAFTAR
-    tab1, tab2 = st.tabs(["📝 Login", "📋 Daftar"])
-    
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # LOGIN / REGISTER
+    tab1, tab2 = st.tabs(["Login", "Daftar"])
+
     with tab1:
-        st.subheader("Masuk ke Akun")
-        email = st.text_input("Email", placeholder="masukkan@email.com", key="login_email")
-        password = st.text_input("Password", type="password", placeholder="Masukkan password", key="login_password")
-        
-        if st.button("🔓 Masuk", use_container_width=True, key="login_btn"):
-            if not email or not password:
-                st.error("⚠️ Email dan password harus diisi!")
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+
+        if st.button("Login"):
+            users = load_users()
+            user = users[(users["email"] == email) & (users["password"] == password)]
+
+            if not user.empty:
+                st.session_state.login = True
+                st.session_state.role = user.iloc[0]["role"]
+                st.rerun()
             else:
-                users = load_users()
-                if email in users and verify_password(password, users[email]['password']):
-                    st.session_state.logged_in = True
-                    st.session_state.user_email = email
-                    st.session_state.user_name = users[email]['name']
-                    st.success("✅ Login berhasil!")
-                    st.rerun()
-                else:
-                    st.error("❌ Email atau password salah!")
-    
+                st.error("Login gagal")
+
     with tab2:
-        st.subheader("Buat Akun Baru")
-        name = st.text_input("Nama Lengkap", placeholder="Masukkan nama Anda", key="register_name")
-        email = st.text_input("Email", placeholder="masukkan@email.com", key="register_email")
-        password = st.text_input("Password", type="password", placeholder="Min 6 karakter", key="register_password")
-        confirm_password = st.text_input("Konfirmasi Password", type="password", placeholder="Ulangi password", key="register_confirm")
-        
-        if st.button("✓ Daftar", use_container_width=True, key="register_btn"):
-            if not name or not email or not password or not confirm_password:
-                st.error("⚠️ Semua field harus diisi!")
-            elif len(password) < 6:
-                st.error("❌ Password minimal 6 karakter!")
-            elif password != confirm_password:
-                st.error("❌ Password tidak cocok!")
+        email = st.text_input("Email baru")
+        password = st.text_input("Password baru", type="password")
+        role = st.selectbox("Daftar sebagai", ["siswa", "guru"])
+
+        if st.button("Daftar"):
+            users = load_users()
+
+            if email in users["email"].values:
+                st.warning("Email sudah terdaftar")
             else:
-                users = load_users()
-                if email in users:
-                    st.error("❌ Email sudah terdaftar!")
-                else:
-                    users[email] = {
-                        'name': name,
-                        'password': hash_password(password),
-                        'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    }
-                    save_users(users)
-                    st.success("✅ Daftar berhasil! Silakan login")
-    
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # FOOTER
-    st.markdown("""
-    <div class="footer-box">
-        <p><strong>SMKN 1 Denpasar</strong></p>
-        <p>© 2026 Sistem Informasi Sekolah. Semua hak dilindungi.</p>
-    </div>
-    """, unsafe_allow_html=True)
+                save_user(email, password, role)
+                st.success("Akun berhasil dibuat!")
+
+    st.stop()
 
 # =========================
-# DASHBOARD (Setelah Login)
+# LOAD DATA
 # =========================
-else:
-    # HEADER DASHBOARD
-    st.markdown(f"""
-    <div class="dashboard-header">
-        <h1>📊 Dashboard</h1>
-        <div class="user-info">👤 {st.session_state.user_name}</div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # LOGOUT BUTTON
-    col1, col2, col3 = st.columns([1, 1, 1])
-    with col3:
-        if st.button("🚪 Logout", use_container_width=True):
-            st.session_state.logged_in = False
-            st.session_state.user_email = None
-            st.session_state.user_name = None
-            st.rerun()
-    
-    st.markdown("---")
-    
-    # STATS
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("👥 Total Users", 42)
-    with col2:
-        st.metric("📊 Data Points", 1250)
-    with col3:
-        st.metric("📈 Growth", "12.5%")
-    
-    st.markdown("")
-    
-    # CHART
-    chart_data = pd.DataFrame({
-        'Minggu': ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'],
-        'Data A': [20, 35, 30, 50],
-        'Data B': [25, 30, 45, 40]
-    })
-    
-    st.bar_chart(chart_data.set_index('Minggu'))
-    
-    st.markdown("---")
-    
-    # FOOTER
-    st.markdown("""
-    <div class="footer-box">
-        <p><strong>SMKN 1 Denpasar</strong></p>
-        <p>© 2026 Sistem Informasi Sekolah. Semua hak dilindungi.</p>
-    </div>
-    """, unsafe_allow_html=True)
+url = "https://docs.google.com/spreadsheets/d/1wIMyXy5C0Q6TLUb09jJcKkTWQ830F_phjYtwOUthyX8/export?format=csv"
+df = pd.read_csv(url)
+df.columns = df.columns.str.strip()
+
+# =========================
+# ANALISIS
+# =========================
+df["Logika"] = df[[
+    "Saya suka membuat program / coding",
+    "Saya suka bekerja dengan angka / matematika",
+    "Saya suka bekerja menggunakan komputer"
+]].mean(axis=1)
+
+df["Kreatif"] = df[[
+    "Saya suka membuat desain visual (poster, video, UI)",
+    "Saya suka menggambar / ilustrasi"
+]].mean(axis=1)
+
+df["Teknik"] = df[[
+    "Saya suka memperbaiki mesin / kendaraan",
+    "Saya suka bekerja dengan listrik / instalasi",
+    "Saya suka merakit atau membongkar alat",
+    "Saya suka bekerja di lapangan"
+]].mean(axis=1)
+
+df["Sosial"] = df[[
+    "Saya suka berbicara di depan umum",
+    "Saya suka bekerja dalam tim",
+    "Saya suka memimpin atau mengatur orang lain"
+]].mean(axis=1)
+
+df["Skor"] = df[["Logika", "Kreatif", "Teknik", "Sosial"]].mean(axis=1)
+
+def rekom(x):
+    return max({
+        "Informatika": x["Logika"],
+        "DKV": x["Kreatif"],
+        "Teknik": x["Teknik"],
+        "Manajemen": x["Sosial"]
+    }, key=lambda k: {
+        "Informatika": x["Logika"],
+        "DKV": x["Kreatif"],
+        "Teknik": x["Teknik"],
+        "Manajemen": x["Sosial"]
+    }[k])
+
+df["Rekomendasi"] = df.apply(rekom, axis=1)
+
+# =========================
+# MENU
+# =========================
+menu = st.radio(
+    "Menu",
+    ["Dashboard", "Data", "Ranking", "Settings"],
+    horizontal=True
+)
+
+# =========================
+# DASHBOARD
+# =========================
+if menu == "Dashboard":
+
+    st.subheader("📊 Dashboard")
+
+    col1, col2 = st.columns(2)
+    jurusan = col1.selectbox("Filter Jurusan", ["Semua"] + list(df["Jurusan SMK"].dropna().unique()))
+    search = col2.text_input("Cari Nama")
+
+    temp = df.copy()
+
+    if jurusan != "Semua":
+        temp = temp[temp["Jurusan SMK"] == jurusan]
+
+    if search:
+        temp = temp[temp["Nama Lengkap"].str.contains(search, case=False, na=False)]
+
+    st.metric("Total Siswa", len(temp))
+    st.metric("Rata-rata Skor", round(temp["Skor"].mean(), 2))
+
+    st.bar_chart(temp[["Logika", "Kreatif", "Teknik", "Sosial"]], use_container_width=True)
+
+# =========================
+# DATA
+# =========================
+elif menu == "Data":
+
+    st.subheader("📋 Data Siswa")
+
+    if st.session_state.role == "guru":
+        st.dataframe(df, use_container_width=True)
+    else:
+        st.warning("Hanya guru yang bisa melihat data")
+
+# =========================
+# RANKING
+# =========================
+elif menu == "Ranking":
+
+    st.subheader("🏆 Ranking")
+
+    top = df.sort_values(by="Skor", ascending=False).head(10)
+    st.dataframe(top, use_container_width=True)
+
+# =========================
+# SETTINGS
+# =========================
+elif menu == "Settings":
+
+    st.subheader("⚙️ Settings")
+
+    if st.button("Refresh Data"):
+        st.rerun()
+
+    st.download_button(
+        "Download CSV",
+        df.to_csv(index=False),
+        file_name="data_siswa.csv"
+    )
