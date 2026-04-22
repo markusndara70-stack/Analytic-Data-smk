@@ -20,12 +20,12 @@ st.markdown("""
 }
 
 .center-screen {
-    width: 100%;
+    height: 100vh;
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
     flex-direction: column;
-    margin-top: 40px;
+    text-align: center;
 }
 
 .header-box {
@@ -127,8 +127,8 @@ if not st.session_state.login:
     # HEADER (LOGO DI ATAS, JUDUL DI BAWAH - CENTER)
     st.markdown("<div class='header-box'>", unsafe_allow_html=True)
 
-    # LOGO CENTER
-    st.markdown("<div style='text-align:center;'>", unsafe_allow_html=True)
+    # LOGO CENTER (BENAR-BENAR TENGAH)
+    st.markdown("<div style='display:flex; justify-content:center;'>", unsafe_allow_html=True)
     if os.path.exists("logo.png"):
         st.image("logo.png", width=80)
     else:
