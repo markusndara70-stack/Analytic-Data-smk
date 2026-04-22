@@ -127,12 +127,13 @@ if not st.session_state.login:
     # HEADER (LOGO DI ATAS, JUDUL DI BAWAH - CENTER)
     st.markdown("<div class='header-box'>", unsafe_allow_html=True)
 
-    col_logo = st.columns([1,2,1])[1]
-    with col_logo:
-        if os.path.exists("logo.png"):
-            st.image("logo.png", width=80)
-        else:
-            st.write("🏫")
+    # LOGO CENTER
+    st.markdown("<div style='text-align:center;'>", unsafe_allow_html=True)
+    if os.path.exists("logo.png"):
+        st.image("logo.png", width=80)
+    else:
+        st.write("🏫")
+    st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("""
         <div class="title" style="text-align:center;">
