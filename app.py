@@ -32,8 +32,10 @@ st.markdown("""
     width: 100%;
     max-width: 900px;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
+    flex-direction: column;
+    text-align: center;
 }
 
 .form-box {
@@ -61,6 +63,24 @@ st.markdown("""
     box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     width: 350px;
 }
+
+
+/* FADE IN ANIMATION */
+.fade-in {
+    animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -102,25 +122,21 @@ if "page" not in st.session_state:
 # =========================
 if not st.session_state.login:
 
-    st.markdown("<div class='center-screen'>", unsafe_allow_html=True)
+    st.markdown("<div class='center-screen fade-in'>", unsafe_allow_html=True)
 
-    # HEADER (LOGO + TITLE kiri kanan)
+    # HEADER (LOGO DI ATAS, JUDUL DI BAWAH - CENTER)
     st.markdown("<div class='header-box'>", unsafe_allow_html=True)
 
-    col1, col2 = st.columns([1,3])
+    if os.path.exists("logo.png"):
+        st.image("logo.png", width=120)
+    else:
+        st.write("🏫")
 
-    with col1:
-        if os.path.exists("logo.png"):
-            st.image("logo.png", width=100)
-        else:
-            st.write("🏫")
-
-    with col2:
-        st.markdown("""
-            <div class="title" style="text-align:right;">
-                SMKN 1 Denpasar
-            </div>
-        """, unsafe_allow_html=True)
+    st.markdown("""
+        <div class="title" style="text-align:center;">
+            SMKN 1 Denpasar
+        </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
