@@ -127,10 +127,12 @@ if not st.session_state.login:
     # HEADER (LOGO DI ATAS, JUDUL DI BAWAH - CENTER)
     st.markdown("<div class='header-box'>", unsafe_allow_html=True)
 
-    if os.path.exists("logo.png"):
-        st.image("logo.png", width=120)
-    else:
-        st.write("🏫")
+    col_logo = st.columns([1,2,1])[1]
+    with col_logo:
+        if os.path.exists("logo.png"):
+            st.image("logo.png", width=80)
+        else:
+            st.write("🏫")
 
     st.markdown("""
         <div class="title" style="text-align:center;">
@@ -143,7 +145,9 @@ if not st.session_state.login:
     # FORM BOX (FULL WIDTH RAPI)
     st.markdown("<div class='form-box'>", unsafe_allow_html=True)
 
-    tab1, tab2 = st.tabs(["Login", "Daftar"])
+    col_form = st.columns([1,2,1])[1]
+    with col_form:
+        tab1, tab2 = st.tabs(["Login", "Daftar"])
 
     with tab1:
         email = st.text_input("Email")
