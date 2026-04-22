@@ -374,99 +374,14 @@ def show_footer():
 # =========================
 def login_page():
     """Halaman Login"""
-    show_header()
-    
-    st.markdown('<div class="auth-container">', unsafe_allow_html=True)
-    st.markdown("""
-    <div class="auth-card">
-        <div class="logo-section">
-            <div class="logo-icon">📊</div>
-        </div>
-        <h2>Masuk</h2>
-    """, unsafe_allow_html=True)
-    
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        email = st.text_input("📧 Email", placeholder="masukkan@email.com", key="login_email")
-        password = st.text_input("🔒 Password", type="password", placeholder="Masukkan password", key="login_password")
-        
-        if st.button("🔓 Masuk", use_container_width=True):
-            if not email or not password:
-                st.error("❌ Email dan password harus diisi!")
-            else:
-                users = load_users()
-                if email in users and verify_password(password, users[email]['password']):
-                    st.session_state.logged_in = True
-                    st.session_state.user_email = email
-                    st.session_state.user_name = users[email]['name']
-                    st.session_state.page = "dashboard"
-                    st.success("✅ Login berhasil!")
-                    st.rerun()
-                else:
-                    st.error("❌ Email atau password salah!")
-        
-        st.markdown("""
-        <div class="auth-link">
-            Belum punya akun? <a onclick="document.querySelector('[data-testid=stRadio]').value = 'register'">Daftar di sini</a>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    st.markdown('</div></div>', unsafe_allow_html=True)
-    show_footer()
+    pass
 
 # =========================
 # REGISTER PAGE
 # =========================
 def register_page():
     """Halaman Register"""
-    show_header()
-    
-    st.markdown('<div class="auth-container">', unsafe_allow_html=True)
-    st.markdown("""
-    <div class="auth-card">
-        <div class="logo-section">
-            <div class="logo-icon">📊</div>
-        </div>
-        <h2>Daftar</h2>
-    """, unsafe_allow_html=True)
-    
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        name = st.text_input("👤 Nama Lengkap", placeholder="Masukkan nama Anda", key="register_name")
-        email = st.text_input("📧 Email", placeholder="masukkan@email.com", key="register_email")
-        password = st.text_input("🔒 Password", type="password", placeholder="Min 6 karakter", key="register_password")
-        confirm_password = st.text_input("✓ Konfirmasi Password", type="password", placeholder="Ulangi password", key="register_confirm")
-        
-        if st.button("✓ Daftar", use_container_width=True):
-            if not name or not email or not password or not confirm_password:
-                st.error("❌ Semua field harus diisi!")
-            elif len(password) < 6:
-                st.error("❌ Password minimal 6 karakter!")
-            elif password != confirm_password:
-                st.error("❌ Password tidak cocok!")
-            else:
-                users = load_users()
-                if email in users:
-                    st.error("❌ Email sudah terdaftar!")
-                else:
-                    users[email] = {
-                        'name': name,
-                        'password': hash_password(password),
-                        'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    }
-                    save_users(users)
-                    st.success("✅ Daftar berhasil! Silakan login")
-                    st.session_state.page = "login"
-                    st.rerun()
-        
-        st.markdown("""
-        <div class="auth-link">
-            Sudah punya akun? <a onclick="document.querySelector('[data-testid=stRadio]').value = 'login'">Login di sini</a>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    st.markdown('</div></div>', unsafe_allow_html=True)
-    show_footer()
+    pass
 
 # =========================
 # DASHBOARD PAGE
@@ -521,18 +436,84 @@ def dashboard_page():
 if st.session_state.logged_in:
     dashboard_page()
 else:
-    # Tab untuk Login/Register
+    # HEADER
+    show_header()
+    
+    # AUTH CONTAINER - CENTER
+    st.markdown('<div class="auth-container">', unsafe_allow_html=True)
+    st.markdown("""
+    <div class="auth-card">
+        <div class="logo-section" style="justify-content: center; margin-bottom: 2rem;">
+            <div class="logo-icon">🏫</div>
+        </div>
+        <h2 style="text-align: center; margin-bottom: 0.5rem;">SMKN 1 Denpasar</h2>
+        <p style="text-align: center; color: #6b7280; margin-bottom: 2rem;">Sistem Informasi Sekolah</p>
+    """, unsafe_allow_html=True)
+    
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        page = st.radio(
-            "Pilih",
-            ["Login", "Daftar"],
-            horizontal=True,
-            label_visibility="collapsed"
-        )
-        st.session_state.page = page.lower()
+        tab1, tab2 = st.tabs(["🔓 Masuk", "📝 Daftar"])
+        
+        # LOGIN TAB
+        with tab1:
+            email = st.text_input("📧 Email", placeholder="masukkan@email.com", key="login_email")
+            password = st.text_input("🔒 Password", type="password", placeholder="Masukkan password", key="login_password")
+            
+            if st.button("Masuk", use_container_width=True, key="login_btn"):
+                if not email or not password:
+                    st.error("❌ Email dan password harus diisi!")
+                else:
+                    users = load_users()
+                    if email in users and verify_password(password, users[email]['password']):
+                        st.session_state.logged_in = True
+                        st.session_state.user_email = email
+                        st.session_state.user_name = users[email]['name']
+                        st.session_state.page = "dashboard"
+                        st.success("✅ Login berhasil!")
+                        st.rerun()
+                    else:
+                        st.error("❌ Email atau password salah!")
+            
+            st.markdown("""
+            <div class="auth-link">
+                Belum punya akun? Buat akun di tab <strong>Daftar</strong>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # REGISTER TAB
+        with tab2:
+            name = st.text_input("👤 Nama Lengkap", placeholder="Masukkan nama Anda", key="register_name")
+            email = st.text_input("📧 Email", placeholder="masukkan@email.com", key="register_email")
+            password = st.text_input("🔒 Password", type="password", placeholder="Min 6 karakter", key="register_password")
+            confirm_password = st.text_input("✓ Konfirmasi Password", type="password", placeholder="Ulangi password", key="register_confirm")
+            
+            if st.button("Daftar", use_container_width=True, key="register_btn"):
+                if not name or not email or not password or not confirm_password:
+                    st.error("❌ Semua field harus diisi!")
+                elif len(password) < 6:
+                    st.error("❌ Password minimal 6 karakter!")
+                elif password != confirm_password:
+                    st.error("❌ Password tidak cocok!")
+                else:
+                    users = load_users()
+                    if email in users:
+                        st.error("❌ Email sudah terdaftar!")
+                    else:
+                        users[email] = {
+                            'name': name,
+                            'password': hash_password(password),
+                            'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        }
+                        save_users(users)
+                        st.success("✅ Daftar berhasil! Silakan login")
+            
+            st.markdown("""
+            <div class="auth-link">
+                Sudah punya akun? Masuk di tab <strong>Masuk</strong>
+            </div>
+            """, unsafe_allow_html=True)
     
-    if st.session_state.page == "login":
-        login_page()
-    else:
-        register_page()
+    st.markdown('</div></div>', unsafe_allow_html=True)
+    
+    # FOOTER
+    show_footer()
